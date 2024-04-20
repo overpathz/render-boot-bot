@@ -46,7 +46,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           echo "${{ secrets.DOCKER_PASS }}" | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
-          docker pull ${{ secrets.DOCKER_USER }}/${{ secrets.DOCKER_REPO }}:latest
+          docker pull overpathz/rendertestbot:latest
           docker stop runningrender || true
           docker rm runningrender || true
           docker run -d --name runningrender -p 8080:8080 overpathz/rendertestbot:latest
