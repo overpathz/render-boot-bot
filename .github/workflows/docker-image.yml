@@ -49,4 +49,4 @@ jobs:
           docker pull overpathz/rendertestbot:latest
           docker stop runningrender || true
           docker rm runningrender || true
-          docker run -d --name runningrender -p 8080:8080 overpathz/rendertestbot:latest
+          docker run --name runningrender -p 8080:8080 overpathz/rendertestbot:latest
