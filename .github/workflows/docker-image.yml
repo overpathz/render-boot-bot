@@ -45,7 +45,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          docker pull ${{ secrets.DOCKER_USER }}/${{ secrets.DOCKER_REPO }}:${{ github.sha }}
+          docker pull ${{ secrets.DOCKER_USER }}/${{ secrets.DOCKER_REPO }}:latest
           docker stop ${DOCKER_REPO} || true
           docker rm ${DOCKER_REPO} || true
-          docker run -d --name ${DOCKER_REPO} -p 8080:8080 ${{ secrets.DOCKER_USER }}/${{ secrets.DOCKER_REPO }}:${{ github.sha }}
+          docker run -d --name ${DOCKER_REPO} -p 8080:8080 ${{ secrets.DOCKER_USER }}/${{ secrets.DOCKER_REPO }}:latest
