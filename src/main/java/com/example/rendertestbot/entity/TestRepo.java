@@ -1,4 +1,4 @@
-package com.example.rendertestbot.controller;
+package com.example.rendertestbot.entity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

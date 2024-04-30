@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "notes")
 @Data
 @NoArgsConstructor
-public class Note {
+public class TestEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String topic;
-    private String text;
-    private String uniqueLinkId;
+
+    private String name;
 }

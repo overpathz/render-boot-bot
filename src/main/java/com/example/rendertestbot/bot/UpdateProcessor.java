@@ -1,16 +1,14 @@
 package com.example.rendertestbot.bot;
 
-import com.example.rendertestbot.entity.Note;
-import com.example.rendertestbot.entity.NoteRepository;
+import com.example.rendertestbot.notes.Note;
+import com.example.rendertestbot.notes.NoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component

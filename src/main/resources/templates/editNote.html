@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Note</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <style>
+        textarea {
+            width: 600px;
+            height: 300px;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<h1>Edit Note</h1>
+
+<textarea id="noteTextArea" placeholder="Start typing here..." th:text="${note.text}"></textarea>
+
+<script th:inline="javascript">
+    let sock = null;
+
+    function connect() {
+        // Assuming the server endpoint for the WebSocket connection is '/init'
+        let userId = /*[[${note.userId}]]*/ 'defaultId';
+        sock = new SockJS('/init?userId=' + encodeURIComponent(userId));
+
+        sock.onopen = function() {
+            console.log('Connection to server opened.');
+        };
+
+        sock.onmessage = function(e) {
+            console.log('Received message: ', e.data);
+            // Handle incoming messages here. For example, update the textarea if needed.
+        };
+
+        sock.onclose = function() {
+            console.log('Connection to server closed.');
+            // Implement reconnection logic here if needed
+        };
+    }
+
+    function generateUUID() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
+    function sendMessage(message) {
+        if (sock && sock.readyState === SockJS.OPEN) {
+            sock.send(JSON.stringify(message));
+            console.log('Message sent:', message);
+        } else {
+            console.log('Connection is not open.');
+        }
+    }
+
+    // Setup the connection
+    connect();
+
+    // Add an event listener to the textarea to send messages as the user types
+    document.getElementById('noteTextArea').addEventListener('input', function(event) {
+        const message = {
+            qualifier: 'UpdateNote',
+            noteId: /*[[${note.id}]]*/ 'defaultNoteId',
+            userIdentifier: /*[[${note.userId}]]*/ 'defaultUserId',
+            correlationId: generateUUID(),
+            noteText: event.target.value,
+        };
+        sendMessage(message);
+    });
+</script>
+</body>
+</html>
