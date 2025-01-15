@@ -1,5 +1,6 @@
 package com.example.rendertestbot.notes;
 
+import com.example.rendertestbot.entity.NoteToken;
 import com.example.rendertestbot.notes.request.BaseWsRequest;
 import com.example.rendertestbot.notes.request.NoteDto;
 import com.example.rendertestbot.notes.request.UpdateNote;
@@ -13,6 +14,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -25,22 +27,67 @@ public class NoteWebSocketHandler implements WebSocketHandler {
     private final ExecutorService executorService;
     private final RedisTemplate<String, String> redisTemplate;
     private final NoteRepository noteRepository;
+    private final NoteTokenRepository noteTokenRepository;
 
-    public NoteWebSocketHandler(ObjectMapper objectMapper, NoteRepository noteRepository, RedisTemplate<String, String> redisTemplate) {
+    public NoteWebSocketHandler(ObjectMapper objectMapper, NoteRepository noteRepository, RedisTemplate<String, String> redisTemplate, NoteTokenRepository noteTokenRepository) {
         this.objectMapper = objectMapper;
         this.noteRepository = noteRepository;
         this.redisTemplate = redisTemplate;
+        this.noteTokenRepository = noteTokenRepository;
         this.executorService = Executors.newSingleThreadExecutor();
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        if (!session.isOpen()) {
+        log.info("Connection established: {}", session.getId());
+        String query = session.getUri().getQuery();
+        Long userId = getUserIdFromQuery(query);
+        String token = getTokenFromQuery(query);
+
+        if (token != null) {
+            validateToken(token, userId);
+        } else {
+            log.warn("Token is missing or invalid for WebSocket session: {}", session.getId());
+            session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         }
-        log.info("connection established");
-        Long userId = getUserIdFromWsSession(session);
-        redisTemplate.opsForValue().set("wsi_"+session.getId(), String.valueOf(userId));
+
+        redisTemplate.opsForValue().set("wsi_" + session.getId(), String.valueOf(userId));
+    }
+
+    private void validateToken(String token, Long userId) {
+        NoteToken noteToken = noteTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalStateException("Invalid token"));
+
+        if (!noteToken.getUserId().equals(String.valueOf(userId))) {
+            throw new IllegalStateException("Token does not match userId");
+        }
+
+        if (noteToken.getExpiryTime().isBefore(Instant.now())) {
+            throw new IllegalStateException("Token is expired");
+        }
+
+        log.info("Token validated successfully for userId: {}", userId);
+    }
+
+    private Long getUserIdFromQuery(String query) {
+        String[] params = query.split("&");
+        for (String param : params) {
+            if (param.startsWith("userId=")) {
+                return Long.valueOf(param.split("=")[1]);
+            }
+        }
+        throw new IllegalArgumentException("Missing userId in WebSocket query");
+    }
+
+    private String getTokenFromQuery(String query) {
+        String[] params = query.split("&");
+        for (String param : params) {
+            if (param.startsWith("token=")) {
+                return param.split("=")[1];
+            }
+        }
+        return null;
     }
 
     private static Long getUserIdFromWsSession(WebSocketSession session) {
