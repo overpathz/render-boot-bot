@@ -16,6 +16,7 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
 
 @Component
@@ -30,7 +31,7 @@ public class NoteWebSocketHandler implements WebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         log.info("Connection established: {}", session.getId());
-        String query = session.getUri().getQuery();
+        String query = Objects.requireNonNull(session.getUri()).getQuery();
         Long userId = getUserIdFromQuery(query);
         String token = getTokenFromQuery(query);
 
@@ -80,11 +81,6 @@ public class NoteWebSocketHandler implements WebSocketHandler {
         return null;
     }
 
-    private static Long getUserIdFromWsSession(WebSocketSession session) {
-        String query = session.getUri().getQuery();
-        return Long.valueOf(query.split("=")[1]);
-    }
-
     @Override
     @SuppressWarnings("all")
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) throws Exception {
@@ -120,23 +116,25 @@ public class NoteWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) throws Exception {
-        String wsiKey = "wsi_" + webSocketSession.getId();
-        long userId = Long.parseLong(redisTemplate.opsForValue().get(wsiKey));
-        Set<String> keys = redisTemplate.keys("note_*");
-        log.info("Keys={}", keys);
-        for (String key : keys) {
-            NoteDto updateNote = objectMapper.readValue(redisTemplate.opsForValue().get(key), NoteDto.class);
-            log.info("Object={}", updateNote);
-            if (userId == updateNote.userId()) {
-                Note note = noteRepository.findById(updateNote.noteId()).orElseThrow();
-                note.setText(updateNote.noteText());
-                noteRepository.save(note);
-                redisTemplate.delete("note_"+note.getId());
-            }
-        }
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String sessionKey = "wsi_" + session.getId();
+        try {
+            Long userId = Long.parseLong(redisTemplate.opsForValue().get(sessionKey));
+            Set<String> keys = redisTemplate.keys("note_*");
 
-        Boolean delete = redisTemplate.delete(wsiKey);
+            for (String key : keys) {
+                NoteDto noteDto = objectMapper.readValue(redisTemplate.opsForValue().get(key), NoteDto.class);
+                if (noteDto.userId().equals(userId)) {
+                    Note note = noteRepository.findById(noteDto.noteId()).orElseThrow();
+                    note.setText(noteDto.noteText());
+                    noteRepository.save(note);
+                    redisTemplate.delete(key);
+                }
+            }
+            redisTemplate.delete(sessionKey);
+        } catch (Exception e) {
+            log.error("Error during cleanup for session: {}", session.getId(), e);
+        }
     }
 
     @Override
