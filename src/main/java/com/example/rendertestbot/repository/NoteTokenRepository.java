@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.repository;
 
 import com.example.rendertestbot.entity.NoteToken;
 import io.lettuce.core.dynamic.annotation.Param;

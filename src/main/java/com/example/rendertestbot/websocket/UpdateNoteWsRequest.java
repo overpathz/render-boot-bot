@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes.request;
+package com.example.rendertestbot.websocket;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class UpdateNote extends BaseWsRequest implements Serializable {
+public class UpdateNoteWsRequest extends BaseWsRequest implements Serializable {
     private Long noteId;
     private String noteText;
 }

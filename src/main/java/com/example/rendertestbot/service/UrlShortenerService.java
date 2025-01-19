@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;

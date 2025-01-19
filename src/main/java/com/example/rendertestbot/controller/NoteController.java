@@ -1,5 +1,7 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.controller;
 
+import com.example.rendertestbot.entity.Note;
+import com.example.rendertestbot.repository.NoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

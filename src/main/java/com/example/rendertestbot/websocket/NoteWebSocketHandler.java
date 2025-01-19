@@ -1,10 +1,11 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.websocket;
 
+import com.example.rendertestbot.entity.Note;
 import com.example.rendertestbot.entity.NoteToken;
-import com.example.rendertestbot.notes.request.BaseWsRequest;
-import com.example.rendertestbot.notes.request.NoteDto;
-import com.example.rendertestbot.notes.request.UpdateNote;
+import com.example.rendertestbot.repository.NoteRepository;
+import com.example.rendertestbot.repository.NoteTokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,27 +16,16 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class NoteWebSocketHandler implements WebSocketHandler {
     private final ObjectMapper objectMapper;
-    private final ExecutorService executorService;
     private final RedisTemplate<String, String> redisTemplate;
     private final NoteRepository noteRepository;
     private final NoteTokenRepository noteTokenRepository;
-
-    public NoteWebSocketHandler(ObjectMapper objectMapper, NoteRepository noteRepository, RedisTemplate<String, String> redisTemplate, NoteTokenRepository noteTokenRepository) {
-        this.objectMapper = objectMapper;
-        this.noteRepository = noteRepository;
-        this.redisTemplate = redisTemplate;
-        this.noteTokenRepository = noteTokenRepository;
-        this.executorService = Executors.newSingleThreadExecutor();
-    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -118,9 +108,9 @@ public class NoteWebSocketHandler implements WebSocketHandler {
 
     @SneakyThrows
     private void handleWsRequest(BaseWsRequest payload) {
-        if (payload instanceof UpdateNote updateNote) {
-            NoteDto noteDto = new NoteDto(updateNote.getNoteId(), updateNote.getNoteText(), updateNote.getUserIdentifier());
-            redisTemplate.opsForValue().set("note_"+updateNote.getNoteId(), objectMapper.writeValueAsString(noteDto));
+        if (payload instanceof UpdateNoteWsRequest updateNoteWsRequest) {
+            NoteDto noteDto = new NoteDto(updateNoteWsRequest.getNoteId(), updateNoteWsRequest.getNoteText(), updateNoteWsRequest.getUserIdentifier());
+            redisTemplate.opsForValue().set("note_"+ updateNoteWsRequest.getNoteId(), objectMapper.writeValueAsString(noteDto));
         }
     }
 

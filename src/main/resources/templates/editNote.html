@@ -1,43 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Note</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .note-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+
         textarea {
-            width: 600px;
+            width: 100%;
             height: 300px;
-            margin-top: 20px;
-            padding: 10px;
+            margin-top: 10px;
+            padding: 15px;
             font-size: 16px;
             font-family: Arial, sans-serif;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .info {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-<h1>Edit Note</h1>
-
-<textarea id="noteTextArea" placeholder="Start typing here..." th:text="${note.text}"></textarea>
+<div class="note-container">
+    <h1>Edit Note</h1>
+    <textarea id="noteTextArea" placeholder="Start typing here..." th:text="${note.text}"></textarea>
+    <div class="info">Your changes will be saved automatically.</div>
+</div>
+<div class="footer">
+    Powered by <a href="https://github.com/ArchiVision" target="_blank">ArchiVision</a>
+</div>
 
 <script th:inline="javascript">
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token'); // Extract token from URL
+    const token = urlParams.get('token');
 
     if (!token) {
         alert('Missing required parameter: token');
         throw new Error('Missing token');
     }
 
-    // remove token from the URL after extraction
     window.history.replaceState({}, document.title, window.location.pathname);
 
     let sock = null;
 
     function connect() {
         let userId = /*[[${note.userId}]]*/ 'defaultId';
-        const connectionUrl = `/init?token=${encodeURIComponent(token)}&userId=`+encodeURIComponent(userId);
+        const connectionUrl = `/init?token=${encodeURIComponent(token)}&userId=` + encodeURIComponent(userId);
         sock = new SockJS(connectionUrl);
 
         sock.onopen = function () {
@@ -54,7 +118,7 @@
     }
 
     function generateUUID() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
             (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
         );
     }
@@ -70,16 +134,22 @@
 
     connect();
 
+    let debounceTimer;
+
     document.getElementById('noteTextArea').addEventListener('input', function (event) {
-        const message = {
-            qualifier: 'UpdateNote',
-            noteId: /*[[${note.id}]]*/ 'defaultNoteId',
-            userIdentifier: /*[[${note.userId}]]*/ 'defaultUserId',
-            correlationId: generateUUID(),
-            noteText: event.target.value,
-        };
-        sendMessage(message);
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const message = {
+                qualifier: 'UpdateNoteWsRequest',
+                noteId: /*[[${note.id}]]*/ 'defaultNoteId',
+                userIdentifier: /*[[${note.userId}]]*/ 'defaultUserId',
+                correlationId: generateUUID(),
+                noteText: event.target.value,
+            };
+            sendMessage(message);
+        }, 500);
     });
+
 </script>
 </body>
 </html>

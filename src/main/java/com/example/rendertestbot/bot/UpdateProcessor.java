@@ -1,10 +1,10 @@
 package com.example.rendertestbot.bot;
 
 import com.example.rendertestbot.entity.NoteToken;
-import com.example.rendertestbot.notes.Note;
-import com.example.rendertestbot.notes.NoteRepository;
-import com.example.rendertestbot.notes.NoteTokenRepository;
-import com.example.rendertestbot.notes.UrlShortenerService;
+import com.example.rendertestbot.entity.Note;
+import com.example.rendertestbot.repository.NoteRepository;
+import com.example.rendertestbot.repository.NoteTokenRepository;
+import com.example.rendertestbot.service.UrlShortenerService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;

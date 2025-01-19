@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

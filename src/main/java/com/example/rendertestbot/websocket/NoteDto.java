@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes.request;
+package com.example.rendertestbot.websocket;
 
 import java.io.Serializable;
 

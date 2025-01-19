@@ -1,5 +1,8 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.controller;
 
+import com.example.rendertestbot.entity.Note;
+import com.example.rendertestbot.repository.NoteRepository;
+import com.example.rendertestbot.repository.NoteTokenRepository;
 import com.example.rendertestbot.entity.NoteToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

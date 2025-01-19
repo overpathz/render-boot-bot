@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes.request;
+package com.example.rendertestbot.websocket;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -11,7 +11,7 @@ import lombok.Data;
         property = "qualifier"
 )
 @JsonSubTypes(
-        @JsonSubTypes.Type(value = UpdateNote.class, name = "UpdateNote")
+        @JsonSubTypes.Type(value = UpdateNoteWsRequest.class, name = "UpdateNoteWsRequest")
 )
 public abstract class BaseWsRequest {
     protected String wsSessionId;

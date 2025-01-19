@@ -1,4 +1,4 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.websocket;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

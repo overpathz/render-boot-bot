@@ -1,5 +1,6 @@
-package com.example.rendertestbot.notes;
+package com.example.rendertestbot.repository;
 
+import com.example.rendertestbot.entity.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
